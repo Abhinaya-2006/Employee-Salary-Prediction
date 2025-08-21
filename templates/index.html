@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Salary Prediction</title>
+    <style>
+        body, html {
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            background-size: 200% 200%;
+            animation: background-color-shift 15s ease infinite;
+        }
+
+        @keyframes background-color-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Homepage Styles */
+        .welcome-page {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            background-image: url("https://cdn-thumbnails.huggingface.co/social-thumbnails/spaces/Knight-coderr/Employee_Salary_Prediction.png");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            position: relative;
+            animation: background-fade 2s ease-in-out forwards;
+        }
+
+        .welcome-content {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            animation: pop-in 1s ease-out forwards;
+            backdrop-filter: blur(5px);
+            position: relative;
+        }
+
+        .welcome-content::before {
+            content: '⚙️';
+            font-size: 5rem;
+            position: absolute;
+            top: -70px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: rotate 5s infinite linear;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes rotate {
+            from { transform: translateX(-50%) rotate(0deg); }
+            to { transform: translateX(-50%) rotate(360deg); }
+        }
+
+        h1.main-title {
+            font-size: 3.5em;
+            margin: 0 0 20px 0;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: .15em solid orange;
+            animation: typing 3.5s steps(20, end) forwards, blink-caret .75s step-end infinite;
+            opacity: 1;
+        }
+
+        .predict-button {
+            background-color: #ff9800;
+            color: white;
+            font-size: 20px;
+            padding: 15px 40px;
+            border: none;
+            cursor: pointer;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+            animation: pulse 2s infinite;
+        }
+
+        .predict-button:hover {
+            background-color: #e68900;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Form Container Styles */
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 40px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            display: none;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            background-image: url("https://www.elegantthemes.com/blog/wp-content/uploads/2013/09/bg-9-full.jpg");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
+            z-index: 0;
+        }
+
+        .container > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .container.active {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .form-step {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-step.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .form-step-content {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label {
+            display: block;
+            width: 100%;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .hint-text {
+            display: block;
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+            text-align: center;
+        }
+
+        input, select {
+            width: 80%;
+            max-width: 400px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            transition: border-color 0.3s;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        input:focus, select:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+        
+        input::placeholder, select::placeholder {
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .range-note {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .step-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .step-navigation button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .step-navigation button:hover {
+            background-color: #0056b3;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            width: 0%;
+            background-color: #28a745;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            font-size: 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+            position: relative;
+        }
+        .submit-btn:hover { background-color: #0056b3; }
+
+        h2 { text-align: center; margin-top: 30px; color: #333; opacity: 0; transition: opacity 0.5s ease-in; }
+        h2.active { opacity: 1; }
+        #predictionResult { font-weight: bold; color: #28a745; font-size: 1.5em; }
+
+        /* Spinner Styles */
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-left-color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            display: none;
+        }
+        button.loading .spinner { display: block; }
+        button.loading { color: transparent !important; pointer-events: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Keyframe Animations */
+        @keyframes background-fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pop-in { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
+        }
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: orange; }
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-page" id="welcomePage">
+        <div class="welcome-content">
+            <h1 class="main-title">Employee Salary Prediction</h1>
+            <button class="predict-button" onclick="showForm()">Predict</button>
+        </div>
+    </div>
+
+    <div class="container" id="predictionFormContainer">
+        <h1>Employee Salary Prediction</h1>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <form id="predictionForm">
+            <section class="form-step active">
+                <div class="form-step-content">
+                    <label for="age">Age:</label>
+                    <input type="text" id="age" name="age" placeholder="e.g., 25" oninput="validateInput(this)" required>
+                    <span class="range-note">(Range: 17 to 90)</span>
+                    <span class="hint-text">Enter your age as a number.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="workclass">Workclass:</label>
+                    <select id="workclass" name="workclass" placeholder="Select your workclass">
+                        <option value="Private">Private</option>
+                        <option value="Self-emp-not-inc">Self-emp-not-inc</option>
+                        <option value="Local-gov">Local-gov</option>
+                        <option value="?">?</option>
+                        <option value="State-gov">State-gov</option>
+                        <option value="Self-emp-inc">Self-emp-inc</option>
+                        <option value="Federal-gov">Federal-gov</option>
+                        <option value="Without-pay">Without-pay</option>
+                        <option value="Never-worked">Never-worked</option>
+                    </select>
+                    <span class="hint-text">The classification of your employment status (e.g., private sector, self-employed, government).</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="education">Education:</label>
+                    <select id="education" name="education" placeholder="Select your education level">
+                        <option value="11th">11th</option>
+                        <option value="HS-grad">HS-grad</option>
+                        <option value="Assoc-acdm">Assoc-acdm</option>
+                        <option value="Some-college">Some-college</option>
+                        <option value="10th">10th</option>
+                        <option value="Prof-school">Prof-school</option>
+                        <option value="7th-8th">7th-8th</option>
+                        <option value="Bachelors">Bachelors</option>
+                        <option value="Masters">Masters</option>
+                        <option value="5th-6th">5th-6th</option>
+                        <option value="Assoc-voc">Assoc-voc</option>
+                        <option value="9th">9th</option>
+                        <option value="Doctorate">Doctorate</option>
+                        <option value="12th">12th</option>
+                        <option value="Preschool">Preschool</option>
+                        <option value="1st-4th">1st-4th</option>
+                    </select>
+                    <span class="hint-text">Your highest level of education.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="educational-num">Educational-num:</label>
+                    <input type="text" id="educational-num" name="educational-num" placeholder="e.g., 9" oninput="validateInput(this)" required>
+                    <span class="range-note">(Range: 1 to 16)</span>
+                    <span class="hint-text">The number of years of education completed. A value of 9 corresponds to a high school graduate.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="marital-status">Marital Status:</label>
+                    <select id="marital-status" name="marital-status" placeholder="Select marital status">
+                        <option value="Never-married">Never-married</option>
+                        <option value="Married-civ-spouse">Married-civ-spouse</option>
+                        <option value="Divorced">Divorced</option>
+                        <option value="Married-spouse-absent">Married-spouse-absent</option>
+                        <option value="Separated">Separated</option>
+                        <option value="Married-AF-spouse">Married-AF-spouse</option>
+                        <option value="Widowed">Widowed</option>
+                    </select>
+                    <span class="hint-text">Your current marital status.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="occupation">Occupation:</label>
+                    <select id="occupation" name="occupation" placeholder="Select an occupation">
+                        <option value="Machine-op-inspct">Machine-op-inspct</option>
+                        <option value="Farming-fishing">Farming-fishing</option>
+                        <option value="Protective-serv">Protective-serv</option>
+                        <option value="?">?</option>
+                        <option value="Other-service">Other-service</option>
+                        <option value="Prof-specialty">Prof-specialty</option>
+                        <option value="Craft-repair">Craft-repair</option>
+                        <option value="Adm-clerical">Adm-clerical</option>
+                        <option value="Handlers-cleaners">Handlers-cleaners</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Tech-support">Tech-support</option>
+                        <option value="Transport-moving">Transport-moving</option>
+                        <option value="Exec-managerial">Exec-managerial</option>
+                        <option value="Priv-house-serv">Priv-house-serv</option>
+                        <option value="Armed-Forces">Armed-Forces</option>
+                    </select>
+                    <span class="hint-text">Your type of job or occupation.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="relationship">Relationship:</label>
+                    <select id="relationship" name="relationship" placeholder="Select your relationship status">
+                        <option value="Own-child">Own-child</option>
+                        <option value="Husband">Husband</option>
+                        <option value="Not-in-family">Not-in-family</option>
+                        <option value="Unmarried">Unmarried</option>
+                        <option value="Wife">Wife</option>
+                        <option value="Other-relative">Other-relative</option>
+                    </select>
+                    <span class="hint-text">Your family relationship status.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="race">Race:</label>
+                    <select id="race" name="race" placeholder="Select your race">
+                        <option value="Black">Black</option>
+                        <option value="White">White</option>
+                        <option value="Asian-Pac-Islander">Asian-Pac-Islander</option>
+                        <option value="Other">Other</option>
+                        <option value="Amer-Indian-Eskimo">Amer-Indian-Eskimo</option>
+                    </select>
+                    <span class="hint-text">Your racial background.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="gender">Gender:</label>
+                    <select id="gender" name="gender" placeholder="Select your gender">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                    <span class="hint-text">Your gender identity.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="capital-gain">Capital-gain:</label>
+                    <input type="text" id="capital-gain" name="capital-gain" placeholder="e.g., 5000" oninput="validateInput(this)" required>
+                    <span class="range-note">(Range: 0 to 99999)</span>
+                    <span class="hint-text">Financial gain from investments or sales of assets.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="capital-loss">Capital-loss:</label>
+                    <input type="text" id="capital-loss" name="capital-loss" placeholder="e.g., 0" oninput="validateInput(this)" required>
+                    <span class="range-note">(Range: 0 to 4356)</span>
+                    <span class="hint-text">Financial loss from investments or sales of assets.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="hours-per-week">Hours-per-week:</label>
+                    <input type="text" id="hours-per-week" name="hours-per-week" placeholder="e.g., 40" oninput="validateInput(this)" required>
+                    <span class="range-note">(Range: 1 to 99)</span>
+                    <span class="hint-text">The number of hours worked per week.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="button" class="next-btn" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="form-step">
+                <div class="form-step-content">
+                    <label for="native-country">Native-country:</label>
+                    <select id="native-country" name="native-country" placeholder="Select your native country">
+                        <option value="United-States">United-States</option>
+                        <option value="?">?</option>
+                        <option value="Mexico">Mexico</option>
+                        <option value="Philippines">Philippines</option>
+                        <option value="Germany">Germany</option>
+                        <option value="Puerto-Rico">Puerto-Rico</option>
+                        <option value="Canada">Canada</option>
+                        <option value="El-Salvador">El-Salvador</option>
+                        <option value="India">India</option>
+                        <option value="Cuba">Cuba</option>
+                        <option value="England">England</option>
+                        <option value="Jamaica">Jamaica</option>
+                        <option value="South">South</option>
+                        <option value="China">China</option>
+                        <option value="Italy">Italy</option>
+                        <option value="Dominican-Republic">Dominican-Republic</option>
+                        <option value="Vietnam">Vietnam</option>
+                        <option value="Guatemala">Guatemala</option>
+                        <option value="Japan">Japan</option>
+                        <option value="Poland">Poland</option>
+                        <option value="Columbia">Columbia</option>
+                        <option value="Taiwan">Taiwan</option>
+                        <option value="Haiti">Haiti</option>
+                        <option value="Portugal">Portugal</option>
+                        <option value="Iran">Iran</option>
+                        <option value="Nicaragua">Nicaragua</option>
+                        <option value="Peru">Peru</option>
+                        <option value="Ecuador">Ecuador</option>
+                        <option value="Greece">Greece</option>
+                        <option value="France">France</option>
+                        <option value="Ireland">Ireland</option>
+                        <option value="Hong">Hong</option>
+                        <option value="Trinadad&Tobago">Trinadad&Tobago</option>
+                        <option value="Cambodia">Cambodia</option>
+                        <option value="Laos">Laos</option>
+                        <option value="Thailand">Thailand</option>
+                        <option value="Yugoslavia">Yugoslavia</option>
+                        <option value="Outlying-US(Guam-USVI-etc)">Outlying-US(Guam-USVI-etc)</option>
+                        <option value="Hungary">Hungary</option>
+                        <option value="Honduras">Honduras</option>
+                        <option value="Scotland">Scotland</option>
+                    </select>
+                    <span class="hint-text">The country of your birth.</span>
+                    <div class="step-navigation">
+                        <button type="button" class="prev-btn" onclick="prevStep()">Previous</button>
+                        <button type="submit" class="submit-btn">
+                            Predict Salary
+                            <div class="spinner"></div>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </form>
+        <h2 id="predictionHeading">Prediction: <span id="predictionResult"></span></h2>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let currentStep = 0;
+        const formSteps = document.querySelectorAll('.form-step');
+        const progressBar = document.getElementById('progressBar');
+
+        function updateProgressBar() {
+            const progress = (currentStep / (formSteps.length - 1)) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function showForm() {
+            const welcomePage = document.getElementById('welcomePage');
+            const predictionFormContainer = document.getElementById('predictionFormContainer');
+
+            welcomePage.style.display = 'none';
+            setTimeout(() => {
+                predictionFormContainer.classList.add('active');
+                showStep(currentStep);
+            }, 10);
+        }
+
+        function showStep(stepIndex) {
+            formSteps.forEach((step, index) => {
+                if (index === stepIndex) {
+                    step.classList.add('active');
+                    const inputField = step.querySelector('input, select');
+                    if (inputField) {
+                        inputField.focus();
+                    }
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+            updateProgressBar();
+        }
+
+        function validateInput(inputElement) {
+            const value = parseInt(inputElement.value);
+            const name = inputElement.name;
+            let isValid = true;
+            let errorMessage = '';
+
+            if (inputElement.value.trim() === '' || isNaN(value)) {
+                inputElement.setCustomValidity('Please enter a valid number.');
+                return;
+            }
+
+            switch (name) {
+                case 'age':
+                    if (value < 17 || value > 90) {
+                        isValid = false;
+                        errorMessage = 'Age must be between 17 and 90.';
+                    }
+                    break;
+                case 'educational-num':
+                    if (value < 1 || value > 16) {
+                        isValid = false;
+                        errorMessage = 'Educational-num must be between 1 and 16.';
+                    }
+                    break;
+                case 'capital-gain':
+                    if (value < 0 || value > 99999) {
+                        isValid = false;
+                        errorMessage = 'Capital-gain must be between 0 and 99999.';
+                    }
+                    break;
+                case 'capital-loss':
+                    if (value < 0 || value > 4356) {
+                        isValid = false;
+                        errorMessage = 'Capital-loss must be between 0 and 4356.';
+                    }
+                    break;
+                case 'hours-per-week':
+                    if (value < 1 || value > 99) {
+                        isValid = false;
+                        errorMessage = 'Hours-per-week must be between 1 and 99.';
+                    }
+                    break;
+            }
+
+            if (!isValid) {
+                inputElement.setCustomValidity(errorMessage);
+                inputElement.style.borderColor = 'red';
+                inputElement.reportValidity();
+            } else {
+                inputElement.setCustomValidity('');
+                inputElement.style.borderColor = ''; 
+            }
+        }
+        
+        function nextStep() {
+            const currentStepElement = formSteps[currentStep];
+            const inputField = currentStepElement.querySelector('input');
+            const selectField = currentStepElement.querySelector('select');
+            
+            if (inputField && !inputField.checkValidity()) {
+                inputField.reportValidity();
+                return;
+            }
+            if (selectField && !selectField.checkValidity()) {
+                selectField.reportValidity();
+                return;
+            }
+
+            if (currentStep < formSteps.length - 1) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        // Event listener for Enter key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const currentInput = document.activeElement;
+                const currentStepElement = currentInput.closest('.form-step');
+
+                if (currentStepElement) {
+                    const nextButton = currentStepElement.querySelector('.next-btn');
+                    const submitButton = currentStepElement.querySelector('.submit-btn');
+
+                    if (nextButton) {
+                        nextStep();
+                    } else if (submitButton) {
+                        document.getElementById('predictionForm').submit();
+                    }
+                }
+            }
+        });
+
+        // Form submission logic
+        $(document).ready(function(){
+            const predictionForm = $('#predictionForm');
+            const submitBtn = predictionForm.find('.submit-btn');
+            const predictionHeading = $('#predictionHeading');
+            const predictionResult = $('#predictionResult');
+
+            predictionForm.submit(function(e){
+                e.preventDefault();
+
+                submitBtn.addClass('loading');
+                predictionHeading.removeClass('active');
+                predictionResult.text('');
+
+                $.ajax({
+                    url: '/predict',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response){
+                        predictionResult.text(response.prediction);
+                        setTimeout(() => {
+                            predictionHeading.addClass('active');
+                        }, 500);
+                    },
+                    complete: function(){
+                        submitBtn.removeClass('loading');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
